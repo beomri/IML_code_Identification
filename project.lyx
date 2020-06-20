@@ -1,0 +1,295 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage{fullpage}
+\date{}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Hackathon – IML
+\end_layout
+
+\begin_layout Section*
+Task 2 – To Each his Code
+\end_layout
+
+\begin_layout Standard
+Source code identification is a known and well-researched problem.
+ We started by looking for metrics for this problem and encountered an interesti
+ng method using n-grams (contiguous sequence of n letter)
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Frantzeskou, Georgia, et al.
+ "Effective identification of source code authors using byte-level information."
+ Proceedings of the 28th international conference on Software engineering.
+ ACM, 2006.
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+This method learns by constructing a list of the 
+\begin_inset Formula $n$
+\end_inset
+
+-grams in each project sorted by their frequency.
+ We keep only the 
+\begin_inset Formula $L$
+\end_inset
+
+ most frequent for each project 
+\begin_inset Formula $i$
+\end_inset
+
+ (from now denoted as 
+\begin_inset Formula $P_{i}$
+\end_inset
+
+).
+ This data is saved in a file.
+\end_layout
+
+\begin_layout Standard
+The prediciton is done by decomposing the given code to its 
+\begin_inset Formula $n$
+\end_inset
+
+-grams and computing the intersection of those 
+\begin_inset Formula $n$
+\end_inset
+
+-grams with each 
+\begin_inset Formula $P_{i}$
+\end_inset
+
+.
+ The project with the largest intersection will be chosen as the prediciton.
+\end_layout
+
+\begin_layout Standard
+The initial implementation of this method is quite simple, but we had to
+ choose both 
+\begin_inset Formula $n$
+\end_inset
+
+ and 
+\begin_inset Formula $L$
+\end_inset
+
+ and decide how to break ties.
+\end_layout
+
+\begin_layout Standard
+We chose 
+\begin_inset Formula $n$
+\end_inset
+
+ and 
+\begin_inset Formula $L$
+\end_inset
+
+ first by what was recommneded in the papers.
+ Unfourtunately, they based their research on bigger test codes.
+\end_layout
+
+\begin_layout Standard
+So, we tried a few of those hyperparameters and managed to deacrease the
+ error-rate.
+\end_layout
+
+\begin_layout Standard
+We found that most of the prediction erros are caused by ties (where we
+ just choose the project with lowest index).
+ Those ties are a result of many reasons:
+\end_layout
+
+\begin_layout Enumerate
+shared libraries (sush as Apache), where many projects use and therefore
+ use the same commands and comments.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Short single lines like 
+\begin_inset Quotes eld
+\end_inset
+
+})
+\begin_inset Quotes erd
+\end_inset
+
+ which ends code blocks and is shared with most programming languages.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $n$
+\end_inset
+
+-grams that don't show up in any 
+\begin_inset Formula $P_{i}$
+\end_inset
+
+ (all intersections are of size 0).
+\end_layout
+
+\begin_layout Standard
+One of the solutions to resolve those ties was to use another 
+\begin_inset Formula $n$
+\end_inset
+
+ as a tie breaker.
+\end_layout
+
+\begin_layout Standard
+We chose to first test with 
+\begin_inset Formula $n_{1}=14$
+\end_inset
+
+, which has a very good success rate, but sometimes results with a tie that
+ hurts it.
+ The tie was caused by an empty intersection with all 
+\begin_inset Formula $P_{i}$
+\end_inset
+
+ because it might be a too long sequence.
+ So we took the tied projects and then checked with 
+\begin_inset Formula $n_{2}=6$
+\end_inset
+
+ and chose accordingly.
+ Because of the smaller size, it had a larger intersection size.
+\end_layout
+
+\begin_layout Standard
+For choosing 
+\begin_inset Formula $L$
+\end_inset
+
+ (the number of 
+\begin_inset Formula $n$
+\end_inset
+
+-grams in each 
+\begin_inset Formula $P_{i}$
+\end_inset
+
+), we tried a a large range of numbers: from 20 to 
+\begin_inset Formula $\infty$
+\end_inset
+
+ (keeping all 
+\begin_inset Formula $n$
+\end_inset
+
+-grams).
+ Ideally, 
+\begin_inset Formula $\infty$
+\end_inset
+
+ would be best, but it takes a lot of time and space.
+ We found 
+\begin_inset Formula $L=50,000$
+\end_inset
+
+ to work fast and well.
+\end_layout
+
+\begin_layout Standard
+We tested the algorithm by dividing the given code into 70% training set,
+ 15% validation set and 15% test set.
+\end_layout
+
+\begin_layout Standard
+We managed to reach an error-rate of 15~20% (a random predictor has an error
+ rate of 85%).
+\end_layout
+
+\begin_layout Standard
+The main cause for errors were single lines which are shared by all programming
+ languages, and therefore can't be propely identified.
+ The same for file description in comments.
+\end_layout
+
+\end_body
+\end_document
